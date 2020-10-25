@@ -24,6 +24,38 @@ void saveChildID(__pid_t pid) {
     fclose(file);
 }
 
+void rmFile(){
+  char filename[40];
+  char homeSrc[50] = "/home/zyx/workspace/tehs";
+  char rmCommand[40];
+
+  sprintf(filename, "%s/config/proc/childProcess%d",homeSrc, getpid());
+
+  sprintf(rmCommand,"rm -rf %s",filename);
+}
+
+forkProcess::forkProcess(active_t childFunc){
+  pid_t pid = fork();
+
+  if(pid == 0){
+    int child_PID = getpid();
+
+    printf("child id: %d\n",child_PID);
+
+    saveChildID(child_PID);
+
+    childFunc();
+
+    printf("stop child process %d...\n",child_PID);
+
+    rmFile();
+  }  else if (pid < 0){
+    printf("FORK FAILED\n");
+
+    _exit(1);
+  }
+}
+
 forkProcess::forkProcess(active_t childFunc,active_t parentFunc) {
     pid_t pid = fork();
 
@@ -36,7 +68,7 @@ forkProcess::forkProcess(active_t childFunc,active_t parentFunc) {
 
       childFunc();
 
-      printf("stop child process...");
+      printf("stop child process...\n");
     } else if (pid > 0) {
       printf("this is parent process...%d\n",getpid());
 

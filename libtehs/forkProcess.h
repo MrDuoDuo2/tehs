@@ -11,6 +11,7 @@ class forkProcess {
 
  public:
   forkProcess(active_t childFunc, active_t parentFunc);
+  forkProcess(active_t childFunc);
 };
 
 #endif //PRCESSANDTHREAD_SRC_FORKPROCESS_H_
