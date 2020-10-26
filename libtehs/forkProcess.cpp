@@ -24,6 +24,26 @@ void saveChildID(__pid_t pid) {
     fclose(file);
 }
 
+forkProcess::forkProcess(active_t childFunc){
+  pid_t pid = fork();
+
+  if(pid == 0){
+    int child_PID = getpid();
+
+    printf("child id: %d\n",child_PID);
+
+    saveChildID(child_PID);
+
+    childFunc();
+
+    printf("stop child process %d...\n",child_PID);
+  }  else if (pid < 0){
+    printf("FORK FAILED\n");
+
+    _exit(1);
+  }
+}
+
 forkProcess::forkProcess(active_t childFunc,active_t parentFunc) {
     pid_t pid = fork();
 
@@ -36,7 +56,7 @@ forkProcess::forkProcess(active_t childFunc,active_t parentFunc) {
 
       childFunc();
 
-      printf("stop child process...");
+      printf("stop child process...\n");
     } else if (pid > 0) {
       printf("this is parent process...%d\n",getpid());
 
