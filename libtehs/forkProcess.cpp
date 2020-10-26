@@ -37,6 +37,7 @@ forkProcess::forkProcess(active_t childFunc){
     childFunc();
 
     printf("stop child process %d...\n",child_PID);
+
   }  else if (pid < 0){
     printf("FORK FAILED\n");
 

@@ -9,6 +9,7 @@
 #include <ares_build.h>
 #include <netinet/in.h>
 #include <sstream>
+#include <sys/wait.h>
 #include "../libtehs/forkProcess.h"
 
 using namespace std;
@@ -181,9 +182,6 @@ void sendMassage() {
                      "%s";
   sprintf(result, buff, Content_Type,response_len, response);
 
-//  printf("Content_Type=%s\n", Content_Type);
-
-//  printf("%s\n", result);
   size_t result_len = strlen(result);
   printf("result_len=%zu\n", result_len);
 
@@ -256,7 +254,6 @@ void PortListener() {
 
       bufferstr = buffer;
 
-
       //测试代码
       size_t acceptInBuffer = bufferstr.find("Accept: ");
       size_t acceptInBuffer1 = bufferstr.find("\r\n",acceptInBuffer+1);
@@ -265,8 +262,6 @@ void PortListener() {
       int size1 = acceptInBuffer + sizeof("Accept: ") -1;
 
       string acceptString = bufferstr.substr(size1,size);
-
-//      string flag = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9";
 
       if (acceptString.size() > 50){
         Content_Type = "text/html";
@@ -296,10 +291,7 @@ void PortListener() {
       }
 
 
-
-
       forkProcess((active_t) connToClinet);
-//      connToClinet();
     }
 
     close(fd);
@@ -316,6 +308,7 @@ int main(int argc, char *argv[]) {
     switch (opt) {
       case 'f':
         parentActive();
+        break;
       case 's':stop(argv[2], atoi(argv[3]));
         break;
       default:usage();
