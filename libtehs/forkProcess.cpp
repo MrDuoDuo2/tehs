@@ -24,7 +24,7 @@ void saveChildID(__pid_t pid) {
     fclose(file);
 }
 
-forkProcess::forkProcess(active_t childFunc){
+void forkNewProcess(active_t childFunc){
   pid_t pid = fork();
 
   if(pid == 0){
@@ -45,7 +45,7 @@ forkProcess::forkProcess(active_t childFunc){
   }
 }
 
-forkProcess::forkProcess(active_t childFunc,active_t parentFunc) {
+void forkNewProcess(active_t childFunc,active_t parentFunc) {
     pid_t pid = fork();
 
     if(pid == 0){

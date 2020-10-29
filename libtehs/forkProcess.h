@@ -7,11 +7,9 @@
 
 typedef void(*active_t)();
 
-class forkProcess {
+void forkNewProcess(active_t childFunc, active_t parentFunc);
 
- public:
-  forkProcess(active_t childFunc, active_t parentFunc);
-  forkProcess(active_t childFunc);
-};
+void forkNewProcess(active_t childFunc);
+
 
 #endif //PRCESSANDTHREAD_SRC_FORKPROCESS_H_

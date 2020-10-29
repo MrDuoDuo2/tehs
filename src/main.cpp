@@ -9,7 +9,6 @@
 #include <ares_build.h>
 #include <netinet/in.h>
 #include <sstream>
-#include <sys/wait.h>
 #include "../libtehs/forkProcess.h"
 
 using namespace std;
@@ -56,6 +55,8 @@ int charToInt(char flagChar) {
   flagString[0] = flagChar;
   return (int) flagString[0];
 }
+
+
 
 
 //保存停止文件
@@ -154,7 +155,7 @@ void sendMassage() {
   const char *response;
 
   const char *indexHome;
-  indexHome = "/home/zyx/workspace/tehs/html/django-blog-tutorial-templates%s";
+  indexHome = "/home/zyx/workspace/tehs/html/taobao%s";
 
   char sendFiles[100];
 
@@ -239,7 +240,7 @@ void PortListener() {
     exit(1);
   }
 }
-//进程运行函数
+
 [[noreturn]] void parentActive() {
   while (true) {
     PortListener();
@@ -291,7 +292,7 @@ void PortListener() {
       }
 
 
-      forkProcess((active_t) connToClinet);
+      forkNewProcess((active_t) connToClinet);
     }
 
     close(fd);
