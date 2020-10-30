@@ -5,7 +5,7 @@
 #include <zconf.h>
 #include <cstdio>
 #include <cstdlib>
-#include "forkProcess.h"
+#include "fork_process.h"
 
 using namespace std;
 

@@ -9,7 +9,7 @@
 #include <ares_build.h>
 #include <netinet/in.h>
 #include <sstream>
-#include "../libtehs/forkProcess.h"
+#include "../libtehs/fork_process.h"
 
 using namespace std;
 
