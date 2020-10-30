@@ -7,9 +7,9 @@
 
 typedef void(*active_t)();
 
-void forkNewProcess(active_t childFunc, active_t parentFunc);
+void fork_new_proc(active_t childFunc, active_t parentFunc);
 
-void forkNewProcess(active_t childFunc);
+void fork_new_proc(active_t childFunc);
 
 
 #endif //PRCESSANDTHREAD_SRC_FORKPROCESS_H_

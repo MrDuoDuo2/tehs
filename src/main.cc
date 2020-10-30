@@ -206,7 +206,7 @@ void connToClinet() {
   //发送消息
   sendMassage();
 }
-void PortListener() {
+int listen_and_accept(int port) {
   fd = socket(AF_INET, SOCK_STREAM, 0);
 
   int reuse = 1;
@@ -225,7 +225,7 @@ void PortListener() {
   struct sockaddr_in sockaddr;
   memset(&sockaddr, 0, sizeof(sockaddr));
   sockaddr.sin_family = AF_INET;
-  sockaddr.sin_port = htons(PORT);
+  sockaddr.sin_port = htons(port);
   sockaddr.sin_addr.s_addr = INADDR_ANY;
 
   //判断bind是否成功
@@ -239,21 +239,27 @@ void PortListener() {
     printf("listen error...");
     exit(1);
   }
+
+  struct sockaddr_in clientaddr;
+  socklen_t socklen = sizeof(clientaddr);
+
+  conn = accept(fd, (struct sockaddr *) &clientaddr, &socklen);
+
+  return conn;
 }
 
 [[noreturn]] void parentActive() {
   while (true) {
-    PortListener();
-
-    struct sockaddr_in clientaddr;
-    socklen_t socklen = sizeof(clientaddr);
+    int conn = listen_and_accept(PORT);
 
     char buffer[1024];
     string bufferstr;
-    if((conn = accept(fd, (struct sockaddr *) &clientaddr, &socklen)) >= 0) {
+    if(conn >= 0){
       recv(conn,buffer,sizeof(buffer),0);
 
       bufferstr = buffer;
+
+
 
       //测试代码
       size_t acceptInBuffer = bufferstr.find("Accept: ");
@@ -296,7 +302,9 @@ void PortListener() {
       }
 
 
-      forkNewProcess((active_t) connToClinet);
+
+
+      fork_new_proc((active_t) connToClinet);
     }
 
     close(fd);
