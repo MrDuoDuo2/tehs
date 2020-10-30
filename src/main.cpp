@@ -287,6 +287,10 @@ void PortListener() {
 
       if (getString=="/"){
         sendFile="/index.html";
+      }else if (getString.find(".jpg")!=string::npos){
+        Content_Type = "image/jpeg";
+        sendFile = getString.c_str();
+        printf("jpg:%d\n",getString.find(".jpg"));
       }else{
         sendFile = getString.c_str();
       }
