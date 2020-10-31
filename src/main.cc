@@ -9,6 +9,7 @@
 #include <ares_build.h>
 #include <netinet/in.h>
 #include <sstream>
+#include <sys/stat.h>
 #include "../libtehs/fork_process.h"
 
 using namespace std;
@@ -25,7 +26,7 @@ static char homeSrc[50] = "/home/zyx/workspace/tehs";
 
 int fd;
 int conn;
-const char *Content_Type;
+string Content_Type;
 const char *sendFile;
 
 struct option longopts[] = {
@@ -55,9 +56,6 @@ int charToInt(char flagChar) {
   flagString[0] = flagChar;
   return (int) flagString[0];
 }
-
-
-
 
 //保存停止文件
 void saveStopFlag(int ID, int Flag, int pid) {
@@ -161,32 +159,34 @@ void sendMassage() {
 
   sprintf(sendFiles, indexHome, sendFile);
 
-  ifstream hltmlfile(sendFiles);
-  ostringstream tmp;
-  tmp << hltmlfile.rdbuf();
-  std::string str = tmp.str();
-  response = str.c_str();
+  ifstream htmlfile(sendFiles,std::fstream::binary);
 
-  size_t response_len = strlen(response);
+  ofstream out("/home/zyx/workspace/tehs/test",std::fstream::out);
 
-  printf("response_len=%zu\n", response_len);
+  stringstream ss;
+  ss<<htmlfile.rdbuf();
 
-  char result[1000000];
+  out<<ss.str();
+
+  int ssize = ss.str().size();
 
 
-  const char *buff = "HTTP/1.1 200 OK\r\n"
-                     "Server: nginx/1.18.0\n"
-                     "Date: Sat, 24 Oct 2020 12:55:54 GMT\n"
-                     "Content-Type: %s\n"
-                     "Content-Length: %zu\r\n"
-                     "\r\n"
-                     "%s";
-  sprintf(result, buff, Content_Type,response_len, response);
 
-  size_t result_len = strlen(result);
-  printf("result_len=%zu\n", result_len);
+  string buff = "HTTP/1.1 200 OK\r\n"
+                "Server: nginx/1.18.0\n"
+                "Date: Sat, 24 Oct 2020 12:55:54 GMT\n"
+                "Content-Type: "+ Content_Type+"\n""Content-Length:" + to_string(ssize) + "\r\n"
+                "\r\n";
 
-  send(conn, result, result_len, 0);
+  string result = buff + ss.str() ;
+
+
+//  sprintf(result, buff, Content_Type,response_len, response);
+//  memccpy(result,);
+//  size_t result_len = strlen(result);
+//  printf("result_len=%zu\n", result_len);
+
+  send(conn, result.c_str(), result.size(), 0);
 
   printf("exit send...\n");
 }
@@ -258,8 +258,6 @@ int listen_and_accept(int port) {
       recv(conn,buffer,sizeof(buffer),0);
 
       bufferstr = buffer;
-
-
 
       //测试代码
       size_t acceptInBuffer = bufferstr.find("Accept: ");
