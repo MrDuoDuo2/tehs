@@ -18,10 +18,10 @@ static int isKillFlag = 0;
 static int typeID = 0;
 
 //项目家目录
-string home_src = "/home/zyx/workspace/tehs";
+static string home_src;
 
 //监听的端口
-#define PORT 8888
+#define PORT 9000
 #define QUEUE 20
 
 int fd;
@@ -37,15 +37,18 @@ struct option longopts[] = {
     {0, 0, 0, 0},
 };
 
+
+
 void usage() {
   fprintf(stderr,
           "\n"
           "Usage: pat [options]\n"
           "\n"
           "Options:\n"
-          "    -f, --fork       fork a child process\n"
+          "    -r, --run       start program\n"
           "    -s, --stop     "
           "stop the process or thread\n"
+          "    -l, --list       list all proc\n"
           "    -h, --help      help\n");
 
   exit(0);
@@ -202,7 +205,27 @@ int listen_and_accept(int port) {
   return conn;
 }
 
+void set_home_src() {
+  string bufferstr;
+  char *buffer;
+  //也可以将buffer作为输出参数
+  if((buffer = getcwd(NULL, 0)) == NULL)
+  {
+    perror("getcwd error");
+  }
+  else
+  {
+    string string1 = "cmake-build-debug-coverage";
+    bufferstr = buffer;
+    size_t size = bufferstr.size() - string1.size();
+    home_src = bufferstr.substr(0, size-1);
+    free(buffer);
+  }
+}
+
 [[noreturn]] void parentActive() {
+  set_home_src();
+
   save_proc_id(home_src, getpid());
 
   printf("%d\n", getpid());
@@ -215,8 +238,6 @@ int listen_and_accept(int port) {
       recv(conn, buffer, sizeof(buffer), 0);
 
       buffer_str = buffer;
-
-
 
       //获取accept
       size_t accept_start_point = buffer_str.find("Accept: ");
@@ -273,7 +294,6 @@ int main(int argc, char *argv[]) {
       ) {
     switch (opt) {
       case 'r':parentActive();
-        break;
       case 's':stop(argv[2], atoi(argv[3]));
         break;
       case 'l':list();
