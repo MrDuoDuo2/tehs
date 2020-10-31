@@ -8,11 +8,6 @@ TEHS是由C++开发的基于LINUX实现的简单HTTP服务器
 - 需要 `nohup`、`screen` 等运行
 - 需要驻留后台
 
-## 安装
-
-```bash
-pip install sppm
-```
 
 ## 用法
 
