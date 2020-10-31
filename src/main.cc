@@ -9,7 +9,7 @@
 #include <ares_build.h>
 #include <netinet/in.h>
 #include <sstream>
-#include <sys/stat.h>
+#include <csignal>
 #include "../libtehs/fork_process.h"
 
 using namespace std;
@@ -18,7 +18,7 @@ static int isKillFlag = 0;
 static int typeID = 0;
 
 //项目家目录
-static char homeSrc[50] = "/home/zyx/workspace/tehs";
+string home_src = "/home/zyx/workspace/tehs";
 
 //监听的端口
 #define PORT 8888
@@ -26,12 +26,13 @@ static char homeSrc[50] = "/home/zyx/workspace/tehs";
 
 int fd;
 int conn;
-string Content_Type;
-const char *sendFile;
+string content_type;
+string send_file;
 
 struct option longopts[] = {
-    {"fork", no_argument, NULL, 'f'},
+    {"run", no_argument, NULL, 'r'},
     {"stop", required_argument, NULL, 's'},
+    {"list", no_argument, NULL, 'l'},
     {"help", no_argument, NULL, 'h'},
     {0, 0, 0, 0},
 };
@@ -50,69 +51,39 @@ void usage() {
   exit(0);
 }
 
-//类型转换
-int charToInt(char flagChar) {
-  char flagString[10];
-  flagString[0] = flagChar;
-  return (int) flagString[0];
+void list() {
+  string filename;
+  filename = home_src + "/config/proc/fatherProcess";
+
+  ifstream list_file;
+  list_file.open(filename, std::ifstream::in);
+
+  string line;
+  while (getline(list_file, line)) {
+    cout << line;
+  }
+
+  list_file.close();
 }
 
-//保存停止文件
-void saveStopFlag(int ID, int Flag, int pid) {
-  char filename[40];
-  char homeSrc[50] = "/home/zyx/workspace/tehs";
-  sprintf(filename, "%s/config/stopflag", homeSrc);
+void save_proc_id(string home, __pid_t pid) {
+  string homeSrc = home + "/config/proc/";
 
-  ofstream stopFile;
-  stopFile.open(filename, std::ifstream::out);
+  string filename = homeSrc + "fatherProcess";
 
-  if (!stopFile.is_open()) {
-    printf("stopflag file open failed....");
+  ofstream save_stream;
+  save_stream.open(filename, std::ifstream::out);
+
+  if (!save_stream.is_open()) {
+    printf("pid file open failed....");
     exit(1);
   }
 
-  stopFile << ID;
-  stopFile << "\n";
-  stopFile << Flag;
-  stopFile << "\n";
-  stopFile << pid;
+  save_stream << pid;
+  save_stream << "\n";
 
-  stopFile.close();
+  save_stream.close();
 }
-
-//获取停止文件
-pid_t getStopFlag() {
-  char filename[40];
-  char homeSrc[50] = "/home/zyx/workspace/tehs";
-
-  sprintf(filename, "%s/config/stopflag", homeSrc);
-
-  ifstream stopfile;
-  stopfile.open(filename, std::ifstream::in);
-
-  while (!stopfile.is_open()) {
-    printf("stopflag file open failed....");
-    sleep(1);
-  }
-
-  string line;
-  int getNum[3];
-  int x = 0;//占位符
-
-  //讲数据存入数组
-  while (getline(stopfile, line)) {
-    getNum[x] = stoi(line);
-    x++;
-  }
-
-  pid_t pid;
-  typeID = getNum[0];
-  isKillFlag = getNum[1];
-  pid = getNum[2];
-
-  return pid;
-}
-
 //暂停函数
 void stop(char *type, int pid) {
   isKillFlag = 1;
@@ -123,99 +94,82 @@ void stop(char *type, int pid) {
   //判断对象类型p:process t:thread
   if (strcmp(type, "p") == 0) {
     printf("stop process:%d now...\n", pid);
-    saveStopFlag(0, isKillFlag, pid);
-  }
-  if (strcmp(type, "t") == 0) {
-    printf("stop thread now...\n");
-    saveStopFlag(1, isKillFlag, pid);
+    kill(pid, SIGINT);
   }
 }
-
-//线程运行函数
-void threadActive() {
-  printf("this is thread...\n");
-
-  while (true) {
-    getStopFlag();
-    if (typeID == 1 && isKillFlag == 1) {
-      printf("stop thread now....\n");
-      saveStopFlag(0, 0, 0);
-      break;
-    }
-  }
-
-  printf("stop thread success ...\n");
-}
-
 
 void sendMassage() {
+  string index_home = "/html/taobao";
+  string send_files;
 
-  const char *response;
+  send_files = home_src + index_home + send_file;
 
-  const char *indexHome;
-  indexHome = "/home/zyx/workspace/tehs/html/taobao%s";
-
-  char sendFiles[100];
-
-  sprintf(sendFiles, indexHome, sendFile);
-
-  ifstream htmlfile(sendFiles,std::fstream::binary);
-
-  ofstream out("/home/zyx/workspace/tehs/test",std::fstream::out);
+  ifstream html_file(send_files, std::fstream::binary);
 
   stringstream ss;
-  ss<<htmlfile.rdbuf();
-
-  out<<ss.str();
-
-  int ssize = ss.str().size();
-
-
+  ss << html_file.rdbuf();
 
   string buff = "HTTP/1.1 200 OK\r\n"
                 "Server: nginx/1.18.0\n"
                 "Date: Sat, 24 Oct 2020 12:55:54 GMT\n"
-                "Content-Type: "+ Content_Type+"\n""Content-Length:" + to_string(ssize) + "\r\n"
-                "\r\n";
-
-  string result = buff + ss.str() ;
-
-
-//  sprintf(result, buff, Content_Type,response_len, response);
-//  memccpy(result,);
-//  size_t result_len = strlen(result);
-//  printf("result_len=%zu\n", result_len);
+                "Content-Type: " + content_type + "\n""Content-Length:" + to_string(ss.str().size()) + "\r\n\r\n";
+  string result = buff + ss.str();
 
   send(conn, result.c_str(), result.size(), 0);
 
   printf("exit send...\n");
 }
 
-void connToClinet() {
+void conn_to_clinet() {
   //client socket
-  char clientBuffer[1024];
+  char client_buffer[1024];
 
   //消息格式化
-  memset(clientBuffer, 0, sizeof(clientBuffer));
+  memset(client_buffer, 0, sizeof(client_buffer));
 
-  if (strcmp(clientBuffer, "exit\n") == 0) {
+  if (strcmp(client_buffer, "exit\n") == 0) {
     printf("exit\n");
     exit(1);
   }
 
+//  save_child_id(home_src,getpid(),"send");
   //发送消息
   sendMassage();
+
 }
+
+void sig_handler(int i) {
+  while (true) {
+    string cmd = "ls /home/zyx/workspace/tehs/tmp";
+    FILE *stream = popen(cmd.c_str(), "r");
+
+    char *buffer;
+    if (stream != NULL) {
+      // 每次从 stream 中读取指定大小的内容
+      while (fgets(buffer, 100, stream))
+        printf(buffer);
+      if (buffer == NULL)
+        exit(1);
+
+      pclose(stream);
+    }
+    exit(i);
+  }
+}
+
 int listen_and_accept(int port) {
+  signal(SIGINT, sig_handler);
   fd = socket(AF_INET, SOCK_STREAM, 0);
 
   int reuse = 1;
 
+  //设置地址复用
   if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const void *) &reuse, sizeof(int)) < 0) {
     perror("setsockopt");
     _exit(-1);
   }
 
+  //设置端口复用
   if (setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, (const void *) &reuse, sizeof(int)) < 0) {
     perror("setsockopt");
     _exit(-1);
@@ -240,73 +194,74 @@ int listen_and_accept(int port) {
     exit(1);
   }
 
-  struct sockaddr_in clientaddr;
-  socklen_t socklen = sizeof(clientaddr);
+  struct sockaddr_in client_addr;
+  socklen_t socket_len = sizeof(client_addr);
 
-  conn = accept(fd, (struct sockaddr *) &clientaddr, &socklen);
+  conn = accept(fd, (struct sockaddr *) &client_addr, &socket_len);
 
   return conn;
 }
 
 [[noreturn]] void parentActive() {
+  save_proc_id(home_src, getpid());
+
+  printf("%d\n", getpid());
   while (true) {
     int conn = listen_and_accept(PORT);
 
     char buffer[1024];
-    string bufferstr;
-    if(conn >= 0){
-      recv(conn,buffer,sizeof(buffer),0);
+    string buffer_str;
+    if (conn >= 0) {
+      recv(conn, buffer, sizeof(buffer), 0);
 
-      bufferstr = buffer;
+      buffer_str = buffer;
 
-      //测试代码
-      size_t acceptInBuffer = bufferstr.find("Accept: ");
-      size_t acceptInBuffer1 = bufferstr.find("\r\n",acceptInBuffer+1);
 
-      int size = acceptInBuffer1 - acceptInBuffer;
-      int size1 = acceptInBuffer + sizeof("Accept: ") -1;
 
-      string acceptString = bufferstr.substr(size1,size);
+      //获取accept
+      size_t accept_start_point = buffer_str.find("Accept: ");
+      size_t accept_end_point = buffer_str.find("\r\n", accept_start_point + 1);
 
-      if (acceptString.size() > 50){
-        Content_Type = "text/html";
-      }else{
-        Content_Type =acceptString.c_str();
+      int len_of_accept = accept_end_point - accept_start_point;
+      int accept_value_point = accept_start_point + sizeof("Accept: ") - 1;
+
+      string accept_value = buffer_str.substr(accept_value_point, len_of_accept);
+
+      //accept判断
+      if (accept_value.size() > 50) {
+        content_type = "text/html";
+      } else {
+        content_type = accept_value;
       }
 
-      printf("%s\n",acceptString.c_str());
+      //获取路由路径
+      size_t fist_line_start_point = buffer_str.find("GET ");
+      size_t fist_line_end_point = buffer_str.find("HTTP/1.1", fist_line_start_point + 1);
 
+      int len_of_fist_line = fist_line_end_point - fist_line_start_point - 5;
+      int fist_line_value_point = fist_line_start_point + sizeof("GET ") - 1;
 
-      //
-      size_t getInBuffer = bufferstr.find("GET ");
-      size_t getInBuffer1 = bufferstr.find("HTTP/1.1",getInBuffer+1);
+      string get_value = buffer_str.substr(fist_line_value_point, len_of_fist_line);
 
-      int size3 = getInBuffer1 - getInBuffer - 5;
-      int size4 = getInBuffer + sizeof("GET ")-1;
-
-      string getString = bufferstr.substr(size4,size3);
-
-      printf("%s\n",getString.c_str());
-
-
-      if (getString=="/"){
-        sendFile="/index.html";
-      }else if (getString.find(".jpg")!=string::npos){
-        Content_Type = "image/jpeg";
-        sendFile = getString.c_str();
-        printf("jpg:%d\n",getString.find(".jpg"));
-      }else{
-        sendFile = getString.c_str();
+      //路径判断
+      if (get_value == "/") {
+        send_file = "/index.html";
+      } else if (get_value.find(".jpg") != string::npos) {
+        content_type = "image/jpeg";
+        send_file = get_value;
+      } else if (get_value.find(".png") != string::npos) {
+        content_type = "image/png";
+        send_file = get_value;
+      } else {
+        send_file = get_value;
       }
 
+      fork_new_proc((active_t) conn_to_clinet);
 
-
-
-      fork_new_proc((active_t) connToClinet);
     }
-
     close(fd);
     close(conn);
+    system("rm -rf /home/zyx/workspace/tehs/tmp/*");
   }
 }
 
@@ -317,10 +272,11 @@ int main(int argc, char *argv[]) {
       (opt = getopt_long(argc, argv, "::alLh::c:d:", longopts, NULL))
       ) {
     switch (opt) {
-      case 'f':
-        parentActive();
+      case 'r':parentActive();
         break;
       case 's':stop(argv[2], atoi(argv[3]));
+        break;
+      case 'l':list();
         break;
       default:usage();
         break;

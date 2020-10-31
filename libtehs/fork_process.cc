@@ -5,24 +5,12 @@
 #include <zconf.h>
 #include <cstdio>
 #include <cstdlib>
+#include <string>
+#include <fstream>
 #include "fork_process.h"
 
 using namespace std;
 
-void saveChildID(__pid_t pid) {
-    FILE *file;
-    char buffer[10];
-    char filename[40];
-    char homeSrc[50] = "/home/zyx/workspace/tehs";
-
-    sprintf(buffer, "%d", pid);
-    sprintf(filename, "%s/config/proc/childProcess%d",homeSrc, pid);
-
-    //保存文件
-    file = fopen(filename,"w");
-    fputs(buffer, file);
-    fclose(file);
-}
 
 void fork_new_proc(active_t childFunc){
   pid_t pid = fork();
@@ -32,11 +20,13 @@ void fork_new_proc(active_t childFunc){
 
     printf("child id: %d\n",child_PID);
 
-    saveChildID(child_PID);
-
     childFunc();
 
     printf("stop child process %d...\n",child_PID);
+
+    string command = "touch /home/zyx/workspace/tehs/tmp/"+to_string(getpid())+".lock";
+
+    system(command.c_str());
 
   }  else if (pid < 0){
     printf("FORK FAILED\n");
@@ -52,8 +42,6 @@ void fork_new_proc(active_t childFunc,active_t parentFunc) {
       int child_PID = getpid();
 
       printf("child id: %d\n",child_PID);
-
-      saveChildID(child_PID);
 
       childFunc();
 
