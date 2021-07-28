@@ -35,4 +35,4 @@
 cmake-build-*/
 .idea/
 config/proc/
-html/
+html/*
