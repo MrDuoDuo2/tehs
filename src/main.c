@@ -30,11 +30,11 @@ string content_type;
 string send_file;
 
 struct option longopts[] = {
-    {"run", no_argument, NULL, 'r'},
-    {"stop", required_argument, NULL, 's'},
-    {"list", no_argument, NULL, 'l'},
-    {"help", no_argument, NULL, 'h'},
-    {0, 0, 0, 0},
+    {"run", no_argument, nullptr, 'r'},
+    {"stop", required_argument, nullptr, 's'},
+    {"list", no_argument, nullptr, 'l'},
+    {"help", no_argument, nullptr, 'h'},
+    {nullptr, 0, nullptr, 0},
 };
 
 
@@ -42,7 +42,7 @@ struct option longopts[] = {
 void usage() {
   fprintf(stderr,
           "\n"
-          "Usage: pat [options]\n"
+          "Usage: tehs [options]\n"
           "\n"
           "Options:\n"
           "    -r, --run       start program\n"
@@ -69,24 +69,6 @@ void list() {
   list_file.close();
 }
 
-void save_proc_id(string home, __pid_t pid) {
-  string homeSrc = home + "/config/proc/";
-
-  string filename = homeSrc + "fatherProcess";
-
-  ofstream save_stream;
-  save_stream.open(filename, std::ifstream::out);
-
-  if (!save_stream.is_open()) {
-    printf("pid file open failed....");
-    exit(1);
-  }
-
-  save_stream << pid;
-  save_stream << "\n";
-
-  save_stream.close();
-}
 //暂停函数
 void stop(char *type, int pid) {
   isKillFlag = 1;
@@ -102,7 +84,7 @@ void stop(char *type, int pid) {
 }
 
 void sendMassage() {
-  string index_home = "/html/taobao";
+  string index_home = "/html";
   string send_files;
 
   send_files = home_src + index_home + send_file;
@@ -215,18 +197,14 @@ void set_home_src() {
   }
   else
   {
-    string string1 = "cmake-build-debug-coverage";
     bufferstr = buffer;
-    size_t size = bufferstr.size() - string1.size();
-    home_src = bufferstr.substr(0, size-1);
+    home_src = bufferstr;
     free(buffer);
   }
 }
 
-[[noreturn]] void parentActive() {
+void parentActive() {
   set_home_src();
-
-  save_proc_id(home_src, getpid());
 
   printf("%d\n", getpid());
   while (true) {
@@ -282,8 +260,12 @@ void set_home_src() {
     }
     close(fd);
     close(conn);
-    system("rm -rf /home/zyx/workspace/tehs/tmp/*");
   }
+}
+
+static void
+tehs_master_process_cycle(){
+
 }
 
 int main(int argc, char *argv[]) {

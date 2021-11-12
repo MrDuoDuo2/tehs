@@ -7,32 +7,35 @@
 #include <cstdlib>
 #include <string>
 #include <fstream>
+#include <sys/socket.h>
+#include <tclDecls.h>
 #include "fork_process.h"
 
 using namespace std;
 
 
 void fork_new_proc(active_t childFunc){
-  pid_t pid = fork();
+    tehs_proccess_t tehsProccess[1024];
+    if(socketpair(AF_UNIX,SOCK_STREAM,0,tehsProccess[1].channel)==-1){
+        pid_t pid = fork();
 
-  if(pid == 0){
-    int child_PID = getpid();
+        if(pid == 0){
+            int child_PID = getpid();
 
-    printf("child id: %d\n",child_PID);
+            printf("child id: %d\n",child_PID);
 
-    childFunc();
+            childFunc();
 
-    printf("stop child process %d...\n",child_PID);
+            printf("stop child process %d...\n",child_PID);
 
-    string command = "touch /home/zyx/workspace/tehs/tmp/"+to_string(getpid())+".lock";
+        }  else if (pid < 0){
+            printf("FORK FAILED\n");
 
-    system(command.c_str());
+            _exit(1);
+        }
+    }
 
-  }  else if (pid < 0){
-    printf("FORK FAILED\n");
 
-    _exit(1);
-  }
 }
 
 void fork_new_proc(active_t childFunc,active_t parentFunc) {
