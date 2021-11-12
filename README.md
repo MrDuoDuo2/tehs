@@ -1,6 +1,6 @@
 # TEHS-The Easy HTTP Server
 ## 简单的HTTP服务器
-TEHS是由C++开发的基于LINUX实现的简单HTTP服务器
+TEHS是由C开发的基于LINUX实现的简单HTTP服务器
 ***仅支持 Linux/Unix***
 
 ## 使用场景
