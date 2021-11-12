@@ -13,12 +13,11 @@ static int typeID = 0;
 
 //监听的端口
 #define PORT 9000
-#define QUEUE 20
+#define QUEUE 20    git push --set-upstream origin dev
+
 
 int fd;
 int conn;
-string content_type;
-string send_file;
 
 struct option longopts[] = {
     {"run", no_argument, NULL, 'r'},

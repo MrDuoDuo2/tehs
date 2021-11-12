@@ -25,7 +25,6 @@ static void tehs_signal_handler(int signo);
 
 void fork_new_proc(active_t childFunc, active_t parentFunc);
 
-void fork_new_proc(active_t childFunc);
 void save_child_id(string home,__pid_t pid,string desc);
 
 #endif
