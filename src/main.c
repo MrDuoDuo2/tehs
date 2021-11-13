@@ -4,16 +4,8 @@
 #include <netinet/in.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "../libtehs/fork_process.h"
+//#include "../libtehs/fork_process.h"
 
-static int tehs_get_options(int argc, char *const *argv);
-
-static int isKillFlag = 0;
-static int typeID = 0;
-
-//监听的端口
-#define PORT 9000
-#define QUEUE 20    git push --set-upstream origin dev
 
 
 int fd;
@@ -43,7 +35,10 @@ void usage() {
   exit(0);
 }
 
+static int tehs_proccess_options();
 
+
+static int tehs_get_options(int argc, char *const *argv);
 
 int main(int argc, char *const *argv) {
     if(tehs_get_options(argc,argv)!=0){
@@ -60,12 +55,12 @@ int tehs_get_options(int argc, char *const *argv){
             ) {
         switch (opt) {
             case 'r':
-                parentActive();
+
             case 's':
-                stop(argv[2], atoi(argv[3]));
+
                 break;
             case 'l':
-                list();
+
                 break;
             case '?':
             case 'h':

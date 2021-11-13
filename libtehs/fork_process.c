@@ -2,14 +2,21 @@
 // Created by zyx on 2020/10/14.
 //
 
+
 #include <zconf.h>
 #include <sys/socket.h>
-#include <bits/sigaction.h>
-#include "fork_process.h"
+#include <stdio.h>
+#include <signal.h>
+
+
+
+static int tehs_init_signals();
+static int tehs_master_process_cycle();
 
 tehs_signal_t signals[]={
         {1,"SIGHUP","reload",tehs_signal_handler}
 };
+
 
 int
 tehs_init_signals(){
@@ -27,6 +34,7 @@ tehs_init_signals(){
 }
 
 
+
 static void
 tehs_signal_handler(int signo) {
     tehs_signal_t *sig;
@@ -40,51 +48,29 @@ tehs_signal_handler(int signo) {
 
 }
 
+void tehs_master_process_cycle(){
+    tehs_proccess_t tehsProccess[1024];
+    if(socketpair(AF_UNIX,SOCK_STREAM,0,tehsProccess[1].channel)==-1){
+        pid_t pid = fork();
 
-void fork_new_proc(active_t childFunc){
-//    tehs_proccess_t tehsProccess[1024];
-//    if(socketpair(AF_UNIX,SOCK_STREAM,0,tehsProccess[1].channel)==-1){
-//        pid_t pid = fork();
-//
-//        if(pid == 0){
-//            int child_PID = getpid();
-//
-//            printf("child id: %d\n",child_PID);
-//
-//            childFunc();
-//
-//            printf("stop child process %d...\n",child_PID);
-//
-//        }  else if (pid < 0){
-//            printf("FORK FAILED\n");
-//
-//            _exit(1);
-//        }
-//    }
+        if(pid == 0){
+            int child_PID = getpid();
+
+            printf("child id: %d\n",child_PID);
+
+            childFunc();
+
+            printf("stop child process %d...\n",child_PID);
+
+        }  else if (pid < 0){
+            printf("FORK FAILED\n");
+
+            _exit(1);
+        }
+    }
     for(;;){
-//        sigsuspend(&set);
+        sigsuspend(&set);
     }
 
 }
 
-void fork_new_proc(active_t childFunc,active_t parentFunc) {
-    pid_t pid = fork();
-
-    if(pid == 0){
-      int child_PID = getpid();
-
-      printf("child id: %d\n",child_PID);
-
-      childFunc();
-
-      printf("stop child process...\n");
-    } else if (pid > 0) {
-      printf("this is parent process...%d\n",getpid());
-
-      parentFunc();
-    }  else {
-      printf("FORK FAILED");
-
-      _exit(1);
-    }
-}
