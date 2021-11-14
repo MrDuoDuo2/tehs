@@ -3,7 +3,7 @@ project(tehs)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(tehs src/main.c libtehs/fork_process.c)
+add_executable(tehs src/main.c libtehs/tehs_process.c libtehs/tehs_process_cycle.c libtehs/tehs_process_cycle.h)
 
 set(CMAKE_BUILD_TYPE "Debug" )
 

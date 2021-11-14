@@ -4,12 +4,13 @@
 #include <netinet/in.h>
 #include <stdlib.h>
 #include <stdio.h>
-//#include "../libtehs/fork_process.h"
+#include "../libtehs/tehs_process_cycle.h"
 
 
 
 int fd;
 int conn;
+int tehs_spawn_process = 0;
 
 struct option longopts[] = {
     {"run", no_argument, NULL, 'r'},
@@ -41,9 +42,11 @@ static int tehs_proccess_options();
 static int tehs_get_options(int argc, char *const *argv);
 
 int main(int argc, char *const *argv) {
-    if(tehs_get_options(argc,argv)!=0){
-        printf("aaa");
+    if(tehs_spawn_process == 1){
+        tehs_master_process_cycle();
     }
+
+
 }
 
 
@@ -55,7 +58,7 @@ int tehs_get_options(int argc, char *const *argv){
             ) {
         switch (opt) {
             case 'r':
-
+                tehs_spawn_process=1;
             case 's':
 
                 break;
