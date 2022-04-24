@@ -1,16 +1,18 @@
-#include <getopt.h>
-#include <zconf.h>
+
+#include <tehs_core.h>
 #include <ares_build.h>
+#include <getopt.h>
 #include <netinet/in.h>
-#include <stdlib.h>
 #include <stdio.h>
-#include "../libtehs/tehs_process_cycle.h"
+#include <stdlib.h>
+#include <zconf.h>
 
-
+static int tehs_proccess_options();
+static int tehs_get_options(int argc, char *const *argv);
 
 int fd;
 int conn;
-int tehs_spawn_process = 0;
+int tehs_spawn_process_t = 0;
 
 struct option longopts[] = {
     {"run", no_argument, NULL, 'r'},
@@ -36,46 +38,58 @@ void usage() {
   exit(0);
 }
 
-static int tehs_proccess_options();
-
-
-static int tehs_get_options(int argc, char *const *argv);
-
 int main(int argc, char *const *argv) {
-    if(tehs_spawn_process == 1){
-        tehs_master_process_cycle();
-    }
+  //获取输入参数
+  tehs_get_options(argc,argv);
 
+  //定义信号
+  tehs_pid = getpid();
+  tehs_parent = getppid();
 
+  //启动变量
+//  if(tehs_spawn_process == 1){
+//      tehs_master_process_cycle();
+//  }
 }
 
-
 int tehs_get_options(int argc, char *const *argv){
-    int opt = 0;
+    u_char *p;
 
-    while (-1 !=
-           (opt = getopt_long(argc, argv, "::alLh::c:d:", longopts, NULL))
-            ) {
-        switch (opt) {
-            case 'r':
-                tehs_spawn_process=1;
-            case 's':
+    for (int i = 1; i < argc; ++i) {
+      p =(u_char *) argv[i];
 
-                break;
-            case 'l':
+      if(*p++ != '-'){
+        printf("opt error");
+        return -1;
+      }
 
-                break;
-            case '?':
-            case 'h':
-                usage();
-                break;
-            default:usage();
-                break;
+      while (*p) {
+        switch (*p++) {
+        case 'r':
+          tehs_spawn_process_t = 1;
+          break;
+
+        case 's':
+
+          break;
+        case 'l':
+
+          break;
+        case '?':
+          usage();
+          break;
+        case 'h':
+          usage();
+          break;
+        default:
+          usage();
+          break;
         }
+      }
     }
     return 0;
 }
-//
+
 //void list() {
 //    string filename;
 //    filename = home_src + "/config/proc/fatherProcess";
@@ -284,8 +298,4 @@ int tehs_get_options(int argc, char *const *argv){
 //        close(conn);
 //    }
 //}
-//
-//static void
-//tehs_master_process_cycle(){
-//
-//}
+

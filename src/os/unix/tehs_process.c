@@ -2,18 +2,18 @@
 // Created by zyx on 2020/10/14.
 //
 
-
-#include <zconf.h>
-#include <sys/socket.h>
-#include <stdio.h>
+#include <tehs_core.h>
 #include <signal.h>
-#include "tehs_process.h"
+#include <stdio.h>
+#include <sys/socket.h>
+#include <zconf.h>
 
 static int tehs_init_signals();
 static void tehs_signal_handler(int signo);
 
 tehs_signal_t signals[]={
-        {1,"SIGHUP","reload",tehs_signal_handler}
+    {1,"SIGHUP","reload",tehs_signal_handler},
+    { 0, NULL, "", NULL }
 };
 
 
@@ -53,12 +53,14 @@ int tehs_spawn_process(tehs_spawn_proc_pt proc,char *name){
     return pid;
 }
 
+//初始化信号
 static int
 tehs_init_signals(){
     tehs_signal_t *sig;
     struct sigaction sa;
 
     for (sig = signals; sig->signo != 0 ; sig++) {
+
         sa.sa_handler = sig->handler;
         sigemptyset(&sa.sa_mask);
         if (sigaction(sig->signo, &sa, NULL) == -1){
@@ -68,13 +70,18 @@ tehs_init_signals(){
     return 1;
 }
 
-static void tehs_signal_handler(int signo) {
+static void
+tehs_signal_handler(int signo) {
     tehs_signal_t *sig;
 
     for (sig = signals; sig->signo != 0; sig++) {
         if (sig->signo == signo) {
             break;
         }
+    }
+
+    if (tehs_process){
+
     }
 
 }

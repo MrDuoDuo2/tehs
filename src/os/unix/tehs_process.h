@@ -5,8 +5,8 @@
 #ifndef _TEHS_PROCESS_H_INCLUDED_
 #define _TEHS_PROCESS_H_INCLUDED_
 
-
-
+#include <signal.h>
+#include <stdint.h>
 typedef void (*tehs_spawn_proc_pt)();
 
 typedef struct{
