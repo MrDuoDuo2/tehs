@@ -2,60 +2,56 @@
 // Created by zyx on 2020/10/14.
 //
 
-#include <zconf.h>
-#include <cstdio>
-#include <cstdlib>
-#include <string>
-#include <fstream>
-#include <sys/socket.h>
-#include <tclDecls.h>
 #include "fork_process.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/socket.h>
+#include <zconf.h>
 
-using namespace std;
+int last_proc_list;
+proc_t proc_list[1024];
 
+pid_t fork_new_proc(active_t proc) {
+  int s;
+  pid_t pid;
 
-void fork_new_proc(active_t childFunc){
-    tehs_proccess_t tehsProccess[1024];
-    if(socketpair(AF_UNIX,SOCK_STREAM,0,tehsProccess[1].channel)==-1){
-        pid_t pid = fork();
-
-        if(pid == 0){
-            int child_PID = getpid();
-
-            printf("child id: %d\n",child_PID);
-
-            childFunc();
-
-            printf("stop child process %d...\n",child_PID);
-
-        }  else if (pid < 0){
-            printf("FORK FAILED\n");
-
-            _exit(1);
-        }
+  for (s = 0; s < last_proc_list; ++s) {
+    if (proc_list[s].pid == -1) {
+      break;
     }
+  }
 
+  if(s==1024){
+    printf("proc size 1024");
+    return -1;
+  }
 
-}
+  if (socketpair(AF_UNIX, SOCK_STREAM, 0, proc_list[s].channel) == -1)
+  {
+    printf("socket filed");
+    return -1;
+  }
 
-void fork_new_proc(active_t childFunc,active_t parentFunc) {
-    pid_t pid = fork();
+  pid = fork();
 
-    if(pid == 0){
-      int child_PID = getpid();
+  switch (pid) {
+    case 0:
+      proc();
+      break;
+    case -1:
+      printf("FORK FAILED\n");
+      break;
+    default:
+      break;
+  }
 
-      printf("child id: %d\n",child_PID);
+  proc_list[s].pid = pid;
+  proc_list[s].proc = proc;
+  proc_list[s].name = "";
 
-      childFunc();
+  if(s == last_proc_list){
+    last_proc_list++;
+  }
 
-      printf("stop child process...\n");
-    } else if (pid > 0) {
-      printf("this is parent process...%d\n",getpid());
-
-      parentFunc();
-    }  else {
-      printf("FORK FAILED");
-
-      _exit(1);
-    }
+  return pid;
 }
